@@ -1,0 +1,187 @@
+﻿<h3 class="fw-bold">SALES ORDER</h3>
+
+<div class="my-4 mb-lg-5 custom-frame">
+    <div class="row mb-lg-5">
+        <div class="col-lg-6">
+            <div class="d-lg-flex align-items-center">
+                <label class="label-custom" for="input-search-sales-order">Keywords</label>
+                <input type="search" class="custom-input" id="input-search-sales-order" />
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="d-lg-flex">
+                <label class="label-custom" for="input-search-sales-order">Order Date</label>
+                <div id="dx-date-sales-order"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="dx-datagrid-sales-order"></div>
+
+@section Scripts {
+    <script>
+        const domain = window.location.origin;
+
+        $(() => {
+            const dxDateSalesOrderInstance = $('#dx-date-sales-order').dxDateBox({
+                type: 'date',
+                displayFormat: 'dd/MM/yyyy'
+            }).dxDateBox('instance');
+
+            const dxDataGridSalesOrderInstance = $('#dx-datagrid-sales-order').dxDataGrid({
+                dataSource : [],
+                columns : [
+                    {
+                        caption: 'No',
+                        alignment: 'center',
+                        width: 50,
+                        cellTemplate: function(cellElement, cellInfo) {
+                            cellElement.text(cellInfo.rowIndex + 1);
+                        },
+                        allowExporting: false
+                    },
+                    {
+                        caption: 'Action',
+                        allowExporting: false,
+                        alignment: 'center',
+                        width: 100,
+                        cellTemplate: function (container, options) {
+                            $('<div>')
+                                .append(
+                                    $(`<a class="text-decoration-none" href="/sales-order/${options.data.salesOrderId}">`)
+                                        .addClass('dx-icon dx-icon-edit')
+                                        .attr('title', 'Edit'),
+                                    $('<a class="text-decoration-none">')
+                                        .addClass('dx-icon dx-icon-trash')
+                                        .css('margin-left', '10px')
+                                        .attr('title', 'Delete')
+                                        .on('dxclick', function(e) {
+                                            e.preventDefault();
+                                            DevExpress.ui.dialog.confirm("Delete this item?", "Confirm")
+                                                .then(function(result) {
+                                                    if (result) {
+                                                        console.log('Delete', options.data);
+                                                    }
+                                                });
+                                        })
+                                )
+                                .appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: 'salesOrderId',
+                        visible: false
+                    },
+                    {
+                        dataField: 'orderNo',
+                        alignment: 'center',
+                        caption: 'Sales Order',
+                    },
+                    {
+                        dataField: 'orderDate',
+                        alignment: 'center',
+                        caption: "Order Date",
+                        dataType: 'date',
+                        format: "dd/MM/yyyy",
+                    },
+                    {
+                        alignment: 'center',
+                        dataField: 'customerName',
+                        caption: 'Customer'
+                    }
+                ],
+                paging: {
+                    pageSize: 10,
+                },
+                pager: {
+                    visible: true,
+                    allowedPageSizes: [5, 10, 'all'],
+                    showPageSizeSelector: false,
+                    showInfo: true,
+                    showNavigationButtons: true,
+                },
+
+                showBorders: true,
+                showColumnLines: true,
+                showRowLines: true,
+
+                columnFixing: { enabled: true },
+                allowColumnResizing: true,
+                columnAutoWidth: true,
+                filterRow: { visible: false },
+                searchPanel: { visible: true },
+                hoverStateEnabled: true,
+                height: 'auto',
+                noDataText: "Tidak ada Data",
+                rowAlternationEnabled: true,
+                toolbar: {
+                    items: [
+                        {
+                            template: function() {
+                                return $('<a href="sales-order/create">')
+                                    .addClass('btn btn-primary me-2')
+                                    .html('<i class="dx-icon dx-icon-plus"></i> Add New Data')
+                            },
+                            location: 'before'
+                        },       
+                        {
+                            template: function() {
+                                return $('<button>')
+                                    .addClass('btn btn-success me-2')
+                                    .html('<i class="dx-icon dx-icon-exportxlsx"></i> Export to Excel')
+                                    .on('click', function(e) {
+                                        const dataGrid = $('#dx-datagrid-sales-order').dxDataGrid('instance');
+                                        const workbook = new ExcelJS.Workbook();
+                                        const worksheet = workbook.addWorksheet('Sales Order');
+
+                                        DevExpress.excelExporter.exportDataGrid({
+                                            component: dataGrid,
+                                            worksheet,
+                                            autoFilterEnabled: true,
+                                        }).then(() => {
+                                            workbook.xlsx.writeBuffer().then((buffer) => {
+                                                saveAs(new Blob([buffer], { type: 'application/octet-stream' }), `SalesOrder-${new Date().toISOString().slice(0,10)}.xlsx`);
+                                            });
+                                        });
+                                    })
+                            },
+                            location: 'before'
+                        },       
+                    ]
+                },
+                onContentReady: function(e) {
+                    var grid = $('#dx-datagrid-sales-order');
+                    var pager = grid.find('div.dx-widget.dx-datagrid-pager.dx-pager').first();
+                    pager.addClass('d-lg-flex justify-content-between');
+
+                    var pagerInfo = grid.find('div.dx-info').first();
+                    pagerInfo.remove();
+                    pager.append(pagerInfo);
+                }
+            }).dxDataGrid('instance');
+
+            $.ajax({
+                url: domain + `/api/sales-orders`,
+                type: "GET",
+                contentType: "application/json",
+                accept: "application/json",
+                success: function (response) {
+                    dxDataGridSalesOrderInstance.option('dataSource', response)
+                },
+                error: function (xhr, error, status) {
+                    const errorJson = xhr.responseJSON;
+                    if (errorJson) {
+                        toastr.error(errorJson.Detail);
+                        return;
+                    }
+
+                    toastr.error("Internal Server Error, Silahkan hubungi admin");
+                    console.log(xhr);
+                }
+            });
+
+        });
+    </script>
+}

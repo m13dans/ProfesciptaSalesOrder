@@ -1,0 +1,20 @@
+﻿@media (min-width: 768px) {
+    .label-custom {
+        width: 180px;
+    }
+
+    #dx-date-sales-order {
+        width: 300px;
+        height: 30px;
+    }
+
+    .custom-input {
+        width: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .label-custom {
+        width: 100%;
+    }
+}
