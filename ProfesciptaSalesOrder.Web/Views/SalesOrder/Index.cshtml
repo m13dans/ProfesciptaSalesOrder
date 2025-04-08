@@ -10,9 +10,12 @@
         </div>
 
         <div class="col-lg-6">
-            <div class="d-lg-flex">
-                <label class="label-custom" for="input-search-sales-order">Order Date</label>
+            <div class="d-lg-flex justify-content-end mb-3">
+                <label class="label-custom" for="dx-date-sales-order">Order Date</label>
                 <div id="dx-date-sales-order"></div>
+            </div>
+            <div class="d-lg-flex justify-content-lg-end">
+                <button id="button-search" type="button" class="btn btn-primary" style="width: 100px; border-radius: 10px;">Search</button>
             </div>
         </div>
     </div>
@@ -151,15 +154,6 @@
                         },       
                     ]
                 },
-                onContentReady: function(e) {
-                    var grid = $('#dx-datagrid-sales-order');
-                    var pager = grid.find('div.dx-widget.dx-datagrid-pager.dx-pager').first();
-                    pager.addClass('d-lg-flex justify-content-between');
-
-                    var pagerInfo = grid.find('div.dx-info').first();
-                    pagerInfo.remove();
-                    pager.append(pagerInfo);
-                }
             }).dxDataGrid('instance');
 
             $.ajax({
@@ -182,6 +176,50 @@
                 }
             });
 
+            $('#button-search').on('click', function(e){
+                e.preventDefault();
+
+                let keywordsValue = $('#input-search-sales-order').val();
+                let salesOrderDateValue = dxDateSalesOrderInstance.option('value')
+
+                $.ajax({
+                    url: domain + `/api/sales-orders?Keywords=${keywordsValue}&OrderDate=${salesOrderDateValue}`,
+                    type: "GET",
+                    contentType: "application/json",
+                    accept: "application/json",
+                    success: function (response) {
+                        dxDataGridSalesOrderInstance.option('dataSource', response)
+                    },
+                    error: function (xhr, error, status) {
+                        if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            const errors = xhr.responseJSON.errors;
+
+                            Object.keys(errors).forEach(field => {
+                                const messages = errors[field];
+                                messages.forEach(msg => {
+                                    DevExpress.ui.notify(
+                                        {
+                                            message: msg,
+                                            width: 300,
+                                            position: {
+                                                my: "top right",
+                                                at: "top right",
+                                                of: window, // Or body, window, etc.
+                                                offset: "-20 20" // X: move 20px left (negative), Y: move 20px down
+                                            }
+                                        },
+                                        "error",
+                                        2000
+                                    );
+                                });
+                            });
+                        } else {
+                            DevExpress.ui.notify("An unknown error occurred.", "error", 2000);
+                        }
+                    }
+                });
+            })
         });
+
     </script>
 }

@@ -66,3 +66,19 @@ input:focus {
     border: 1px solid rgba(0, 0, 255, 0.3);
     border-radius: 20px;
 }
+
+/* Position pager elements */
+.dx-datagrid-pager .dx-pages {
+    width: 100%;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.dx-datagrid-pager .dx-page-indexes {
+    order: 1 !important;
+}
+
+.dx-datagrid-pager .dx-info {
+    order: 2 !important;
+}
