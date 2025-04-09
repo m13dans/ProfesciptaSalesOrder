@@ -1,7 +1,7 @@
 ﻿<h3 class="fw-bold">SALES ORDER</h3>
 
 <div class="my-4 mb-lg-5 custom-frame">
-    <div class="row mb-lg-5">
+    <form class="row mb-lg-5">
         <div class="col-lg-6">
             <div class="d-lg-flex align-items-center">
                 <label class="label-custom" for="input-search-sales-order">Keywords</label>
@@ -15,10 +15,10 @@
                 <div id="dx-date-sales-order"></div>
             </div>
             <div class="d-lg-flex justify-content-lg-end">
-                <button id="button-search" type="button" class="btn btn-primary" style="width: 100px; border-radius: 10px;">Search</button>
+                <button id="button-search" type="submit" class="btn btn-primary" style="width: 100px; border-radius: 10px;">Search</button>
             </div>
         </div>
-    </div>
+    </form>
 </div>
 
 <div id="dx-datagrid-sales-order"></div>
@@ -28,9 +28,12 @@
         const domain = window.location.origin;
 
         $(() => {
-            const dxDateSalesOrderInstance = $('#dx-date-sales-order').dxDateBox({
+            DevExpress.localization.locale('id');
+
+           const dxDateSalesOrderInstance = $('#dx-date-sales-order').dxDateBox({
                 type: 'date',
-                displayFormat: 'dd/MM/yyyy'
+                displayFormat: 'dd/MM/yyyy',
+                height: 30
             }).dxDateBox('instance');
 
             const dxDataGridSalesOrderInstance = $('#dx-datagrid-sales-order').dxDataGrid({
@@ -123,12 +126,12 @@
                     items: [
                         {
                             template: function() {
-                                return $('<a href="sales-order/create">')
+                                return $('<a href="SalesOrder/create">')
                                     .addClass('btn btn-primary me-2')
                                     .html('<i class="dx-icon dx-icon-plus"></i> Add New Data')
                             },
                             location: 'before'
-                        },       
+                        },
                         {
                             template: function() {
                                 return $('<button>')
@@ -151,39 +154,55 @@
                                     })
                             },
                             location: 'before'
-                        },       
+                        },
                     ]
                 },
             }).dxDataGrid('instance');
 
-            $.ajax({
-                url: domain + `/api/sales-orders`,
-                type: "GET",
-                contentType: "application/json",
-                accept: "application/json",
-                success: function (response) {
-                    dxDataGridSalesOrderInstance.option('dataSource', response)
-                },
-                error: function (xhr, error, status) {
-                    const errorJson = xhr.responseJSON;
-                    if (errorJson) {
-                        toastr.error(errorJson.Detail);
-                        return;
-                    }
+            fetchGetSalesOrder();
+            function fetchGetSalesOrder() {
 
-                    toastr.error("Internal Server Error, Silahkan hubungi admin");
-                    console.log(xhr);
-                }
-            });
+                $.ajax({
+                    url: domain + `/api/sales-orders`,
+                    type: "GET",
+                    contentType: "application/json",
+                    accept: "application/json",
+                    success: function (response) {
+                        dxDataGridSalesOrderInstance.option('dataSource', response)
+                    },
+                    error: function (xhr, error, status) {
+                        const errorJson = xhr.responseJSON;
+                        if (errorJson) {
+                            toastr.error(errorJson.Detail);
+                            return;
+                        }
+
+                        toastr.error("Internal Server Error, Silahkan hubungi admin");
+                        console.log(xhr);
+                    }
+                });
+            }
+
 
             $('#button-search').on('click', function(e){
                 e.preventDefault();
 
                 let keywordsValue = $('#input-search-sales-order').val();
-                let salesOrderDateValue = dxDateSalesOrderInstance.option('value')
+                let salesOrderDateValue = dxDateSalesOrderInstance.option('value');
+
+                let salesOrderDateFormated;
+                let queryStringDate;
+
+                if (!salesOrderDateValue) {
+                    queryStringDate = ""
+
+                } else {
+                    salesOrderDateFormated = new Date(Date.UTC(salesOrderDateValue.getFullYear(), salesOrderDateValue.getMonth(), salesOrderDateValue.getDate()))
+                    queryStringDate = `&OrderDate=${salesOrderDateFormated.toISOString()}`
+                }
 
                 $.ajax({
-                    url: domain + `/api/sales-orders?Keywords=${keywordsValue}&OrderDate=${salesOrderDateValue}`,
+                    url: domain + `/api/sales-orders?Keywords=${keywordsValue}${queryStringDate}`,
                     type: "GET",
                     contentType: "application/json",
                     accept: "application/json",

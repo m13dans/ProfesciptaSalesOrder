@@ -41,7 +41,23 @@ body {
     color: black;
 }
 
+.custom-input-address {
+    padding-left: 5px;
+    border-radius: 6px;
+    height: 30px;
+    border: solid;
+    border-width: 0.1px;
+    border-color: lightgray;
+    color: black;
+}
+
 input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    border-color: #80bdff;
+}
+
+textarea:focus {
     outline: none;
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
     border-color: #80bdff;
@@ -62,7 +78,7 @@ input:focus {
 }
 
 .custom-frame {
-    padding: 30px 50px 100px 50px;
+    padding: 30px 50px 50px 50px;
     border: 1px solid rgba(0, 0, 255, 0.3);
     border-radius: 20px;
 }
@@ -82,3 +98,30 @@ input:focus {
 .dx-datagrid-pager .dx-info {
     order: 2 !important;
 }
+
+@media (min-width: 768px) {
+    .label-custom {
+        width: 180px;
+    }
+
+
+    .custom-input {
+        width: 300px;
+    }
+
+    .custom-input-address {
+        width: 300px;
+        height: 100px;
+    }
+}
+
+@media (max-width: 768px) {
+    .label-custom {
+        width: 100%;
+    }
+}
+
+.dx-datebox {
+    width: 300px;
+}
+

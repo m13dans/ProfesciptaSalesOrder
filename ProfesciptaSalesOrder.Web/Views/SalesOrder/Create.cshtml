@@ -1,1 +1,274 @@
-﻿
+﻿<h3 class="fw-bold">SALES ORDER - CREATE</h3>
+
+<div class="p-2 border-bottom">
+    <h4 class="text-center my-auto" >Sales Order Information</h4>
+</div>
+
+<div class="mb-lg-5 px-4 pt-3">
+    <div class="row mb-lg-5">
+        <div class="col-lg-6">
+            <div class="d-lg-flex align-items-center mb-3">
+                <label class="label-custom" for="input-sales-order">Sales Order Number</label>
+                <input type="text" class="custom-input" id="input-sales-order" />
+            </div>
+
+            <div class="d-lg-flex align-items-center mb-3">
+                <label class="label-custom" for="dx-date-sales-order">Order Date</label>
+                <div id="dx-date-sales-order"></div>
+            </div>
+
+        </div>
+
+        <div class="col-lg-6">
+            <div class="d-lg-flex align-items-center mb-3">
+                <label class="label-custom" for="input-customer">Customer</label>
+                <input type="text" class="custom-input" id="input-customer" />
+            </div>
+
+            <div class="d-lg-flex">
+                <label class="label-custom" for="input-address">Address</label>
+                <textarea class="custom-input-address" id="input-address"></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="p-2 border-top border-bottom mb-3">
+    <h4 class="text-center my-auto">Detail Item Information</h4>
+</div>
+
+<div id="dx-datagrid-detail-item"></div>
+
+@section Scripts {
+    <script>
+        const domain = window.location.origin;
+
+        $(() => {
+            DevExpress.localization.locale('id');
+
+           const dxDateSalesOrderInstance = $('#dx-date-sales-order').dxDateBox({
+                type: 'date',
+                displayFormat: 'dd/MM/yyyy',
+                height: 30
+            }).dxDateBox('instance');
+
+            const dxDataGridSalesOrderInstance = $('#dx-datagrid-detail-item').dxDataGrid({
+                dataSource : [],
+                // editing: {
+                //     allowUpdating: true,
+                //     allowDeleting: true,
+                //     allowAdding: true,
+                //     mode: 'row'
+                // },
+
+                columns : [
+                    {
+                        caption: 'No',
+                        alignment: 'center',
+                        width: 50,
+                        cellTemplate: function(cellElement, cellInfo) {
+                            cellElement.text(cellInfo.rowIndex + 1);
+                        },
+                        allowExporting: false
+                    },
+                    {
+                        caption: 'Action',
+                        allowExporting: false,
+                        alignment: 'center',
+                        width: 100,
+                        cellTemplate: function (container, options) {
+                            const $container = $('<div>');
+                            const grid = $('#dx-datagrid-detail-item').dxDataGrid('instance');
+
+                            if (options.row && options.row.isEditing) {
+                                // Save and Cancel buttons for edit mode
+                                $container.append(
+                                    $('<a href="#" class="text-decoration-none">')
+                                        .addClass('dx-icon dx-icon-save')
+                                        .attr('title', 'Save')
+                                        .on('click', function(e) {
+                                            e.preventDefault();
+                                            grid.saveEditData();
+                                        }),
+                                    $('<a href="#" class="text-decoration-none">')
+                                        .addClass('dx-icon dx-icon-revert')
+                                        .css('margin-left', '10px')
+                                        .attr('title', 'Cancel')
+                                        .on('click', function(e) {
+                                            e.preventDefault();
+                                            grid.cancelEditData();
+                                        })
+                                );
+                            } else {
+                                // Edit and Delete buttons for view mode
+                                $container.append(
+                                    $('<a href="#" class="text-decoration-none">')
+                                        .addClass('dx-icon dx-icon-edit')
+                                        .attr('title', 'Edit')
+                                        .on('click', function(e) {
+                                            e.preventDefault();
+                                            grid.editRow(options.rowIndex);
+                                        }),
+                                    $('<a href="#" class="text-decoration-none">')
+                                        .addClass('dx-icon dx-icon-trash')
+                                        .css('margin-left', '10px')
+                                        .attr('title', 'Delete')
+                                        .on('click', function(e) {
+                                            e.preventDefault();
+                                            grid.deleteRow(options.rowIndex);
+                                        })
+                                );
+                            }
+
+                            $container.appendTo(container);
+                        } 
+                    },
+                    {
+                        dataField: 'salesOrderId',
+                        visible: false
+                    },
+                    {
+                        dataField: 'orderNo',
+                        alignment: 'center',
+                        caption: 'Item Name',
+                    },
+                    {
+                        alignment: 'center',
+                        dataField: 'qty',
+                        caption: 'Qty'
+                    },
+                    {
+                        alignment: 'center',
+                        dataField: 'price',
+                        caption: 'Price'
+                    },
+                    {
+                        alignment: 'center',
+                        dataField: 'total',
+                        caption: 'Total'
+                    }
+                ],
+                paging: {
+                    pageSize: 10,
+                },
+                pager: {
+                    visible: true,
+                    allowedPageSizes: [5, 10, 'all'],
+                    showPageSizeSelector: false,
+                    showInfo: true,
+                    showNavigationButtons: true,
+                },
+
+                showBorders: true,
+                showColumnLines: true,
+                showRowLines: true,
+
+                columnFixing: { enabled: true },
+                allowColumnResizing: true,
+                columnAutoWidth: true,
+                filterRow: { visible: false },
+                searchPanel: { visible: false },
+                hoverStateEnabled: true,
+                height: 'auto',
+                noDataText: "Tidak ada Data",
+                rowAlternationEnabled: true,
+                toolbar: {
+                    items: [
+                        {
+                            template: function() {
+                                return $('<button>')
+                                    .addClass('btn btn-primary me-2')
+                                    .html('<i class="dx-icon dx-icon-product"></i> Add Item')
+                                    .on('click', function(e) {
+                                        dxDataGridSalesOrderInstance.addRow();
+                                    })
+                            },
+                            location: 'before'
+                        },
+                    ]
+                },
+            }).dxDataGrid('instance');
+
+            // fetchGetSalesOrder();
+            function fetchGetSalesOrder() {
+
+                $.ajax({
+                    url: domain + `/api/sales-orders`,
+                    type: "GET",
+                    contentType: "application/json",
+                    accept: "application/json",
+                    success: function (response) {
+                        dxDataGridSalesOrderInstance.option('dataSource', response)
+                    },
+                    error: function (xhr, error, status) {
+                        const errorJson = xhr.responseJSON;
+                        if (errorJson) {
+                            toastr.error(errorJson.Detail);
+                            return;
+                        }
+
+                        toastr.error("Internal Server Error, Silahkan hubungi admin");
+                        console.log(xhr);
+                    }
+                });
+            }
+
+
+            $('#button-search').on('click', function(e){
+                e.preventDefault();
+
+                let keywordsValue = $('#input-search-sales-order').val();
+                let salesOrderDateValue = dxDateSalesOrderInstance.option('value');
+
+                let salesOrderDateFormated;
+                let queryStringDate;
+
+                if (!salesOrderDateValue) {
+                    queryStringDate = ""
+
+                } else {
+                    salesOrderDateFormated = new Date(Date.UTC(salesOrderDateValue.getFullYear(), salesOrderDateValue.getMonth(), salesOrderDateValue.getDate()))
+                    queryStringDate = `&OrderDate=${salesOrderDateFormated.toISOString()}`
+                }
+
+                $.ajax({
+                    url: domain + `/api/sales-orders?Keywords=${keywordsValue}${queryStringDate}`,
+                    type: "GET",
+                    contentType: "application/json",
+                    accept: "application/json",
+                    success: function (response) {
+                        dxDataGridSalesOrderInstance.option('dataSource', response)
+                    },
+                    error: function (xhr, error, status) {
+                        if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            const errors = xhr.responseJSON.errors;
+
+                            Object.keys(errors).forEach(field => {
+                                const messages = errors[field];
+                                messages.forEach(msg => {
+                                    DevExpress.ui.notify(
+                                        {
+                                            message: msg,
+                                            width: 300,
+                                            position: {
+                                                my: "top right",
+                                                at: "top right",
+                                                of: window, // Or body, window, etc.
+                                                offset: "-20 20" // X: move 20px left (negative), Y: move 20px down
+                                            }
+                                        },
+                                        "error",
+                                        2000
+                                    );
+                                });
+                            });
+                        } else {
+                            DevExpress.ui.notify("An unknown error occurred.", "error", 2000);
+                        }
+                    }
+                });
+            })
+        });
+
+    </script>
+}
