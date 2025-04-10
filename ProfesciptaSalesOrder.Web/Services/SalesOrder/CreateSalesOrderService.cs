@@ -11,10 +11,10 @@ public class CreateSalesOrderRequest
     public int CustomerId { get; set; }
     public string? Address { get; set; }
 
-    public required List<CreateSalesOrderDetailItems> DetailItems { get; set; }
+    public required List<DetailItems> DetailItems { get; set; }
 
 }
-public class CreateSalesOrderDetailItems
+public class DetailItems
 {
     public required string ItemName { get; set; }
     public int Quantity { get; set; }
@@ -61,8 +61,19 @@ public class CreateSalesOrderService(ConnectionString connectionString)
 
         try
         {
+            if (request.DetailItems.Count <= 0)
+            {
+                return Result<CreateSalesOrderResponse>.Failure($"Must Have at least one item");
+            }
             using var conn = connectionString.Create();
             conn.Open();
+
+            var salesOrderNo = await conn.QueryFirstOrDefaultAsync<string>("SELECT ORDER_NO FROM SO_ORDER WHERE ORDER_NO = @SalesOrderNo", new { request.SalesOrderNo });
+            if (!string.IsNullOrEmpty(salesOrderNo))
+            {
+                return Result<CreateSalesOrderResponse>.Failure($"Sales Order with Sales Order No : {request.SalesOrderNo} Already Exists");
+            }
+
             using var transaction = conn.BeginTransaction();
 
             var salesOrderId = await conn.ExecuteScalarAsync<int>(sql, new

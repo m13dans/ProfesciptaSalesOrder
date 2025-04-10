@@ -1,4 +1,8 @@
-﻿<h3 class="fw-bold my-0">SALES ORDER - CREATE</h3>
+﻿@{
+    ViewData["Title"] = "Create Sales Order";
+}
+
+<h3 class="fw-bold my-0">SALES ORDER - CREATE</h3>
 
 <div class="p-2 border-bottom">
     <h4 class="text-center my-auto">Sales Order Information</h4>
@@ -59,20 +63,30 @@
 
 <div class="d-flex justify-content-center gap-4">
     <button type="button" id="button-save" class="btn btn-primary px-5">Save</button>
-    <button type="button" id="button-cancel" class="btn btn-secondary px-5">Close</button>
+    <a href="/SalesOrder" id="button-cancel" class="btn btn-secondary px-5">Close</a>
 </div>
 
 @section Scripts {
     <script>
         const domain = window.location.origin;
 
+
         $(() => {
+            toastr.options = {
+                "timeOut": "3500",
+                "progressBar": true,
+            }
+
             DevExpress.localization.locale('id');
 
            const dxDateSalesOrderInstance = $('#dx-date-sales-order').dxDateBox({
                 type: 'date',
                 displayFormat: 'dd/MM/yyyy',
-                height: 30
+                height: 30,
+                showClearButton: true,
+                calendarOptions: {
+                    showTodayButton: true,
+                }
             }).dxDateBox('instance');
 
             const dxDropDownCustomerInstance = $('#dx-dropdown-customer').dxSelectBox({
@@ -84,8 +98,9 @@
                 placeholder: ""
             }).dxSelectBox('instance');
 
-            const dxDataGridSalesOrderInstance = $('#dx-datagrid-detail-item').dxDataGrid({
+            const dxDataGridDetailItemInstance = $('#dx-datagrid-detail-item').dxDataGrid({
                 dataSource : [],
+                height: 'auto',
                 editing: {
                     mode: 'row',
                     newRowPosition: 'last'
@@ -221,7 +236,8 @@
                     }
                 ],
                 paging: {
-                    enabled: true
+                    enabled: true,
+                    pageSize: 5
                 },
                 pager: {
                     visible: true,
@@ -253,13 +269,13 @@
                                     .html('<i class="dx-icon dx-icon-product"></i> Add Item')
                                     .on('click', function(e) {
                                         setTimeout(() => {
-                                            debugger
+                                            
                                             $('#dx-datagrid-detail-item').find('tbody tr.dx-row-inserted').first().children('td').eq(2).find('input.dx-texteditor-input').first().focus();
                                         }, 100)
 
-                                        dxDataGridSalesOrderInstance.addRow();
+                                        dxDataGridDetailItemInstance.addRow();
 
-                                        debugger
+                                        
                                     })
                             },
                             location: 'before'
@@ -267,18 +283,18 @@
                     ]
                 },
                 onSaved: function(e) {
-                    debugger
+                    
                     var element = $(e.element).find('tbody tr.dx-row-inserted').first().children('td').eq(2).find('input.dx-texteditor-input').first();
                     setTimeout(() => {
                         element.focus();
                     }, 100);
                 },
                 onRowInserted(e) {
-                    debugger
+                    
 
                     e.component.addRow();
                     // setTimeout(() => {
-                    //     dxDataGridSalesOrderInstance.editCell(0, "itemName");
+                    //     dxDataGridDetailItemInstance.editCell(0, "itemName");
                     // }, 100);
                 },
                 summary: {
@@ -358,12 +374,12 @@
                     contentType: "application/json",
                     accept: "application/json",
                     success: function (response) {
-                        dxDataGridSalesOrderInstance.option('dataSource', response)
+                        dxDataGridDetailItemInstance.option('dataSource', response)
                     },
                     error: function (xhr, error, status) {
                         const errorJson = xhr.responseJSON;
                         if (errorJson) {
-                            toastr.error(errorJson.Detail);
+                            toastr.error(errorJson.detail);
                             return;
                         }
 
@@ -397,7 +413,7 @@
                     contentType: "application/json",
                     accept: "application/json",
                     success: function (response) {
-                        dxDataGridSalesOrderInstance.option('dataSource', response)
+                        dxDataGridDetailItemInstance.option('dataSource', response)
                     },
                     error: function (xhr, error, status) {
 
@@ -436,7 +452,7 @@
                 let customerId = dxDropDownCustomerInstance.option('value');
                 let address = $('#input-address').val();
 
-                debugger
+                
 
                 let invalidElement = [];
 
@@ -463,9 +479,7 @@
                     return;
                 }
 
-                let detailItems = dxDataGridSalesOrderInstance.option('dataSource');
-
-                console.log(detailItems);
+                let detailItems = dxDataGridDetailItemInstance.option('dataSource');
 
                 let data = { customerId: customerId, salesOrderNo : orderNumber, salesOrderDate: orderDate, address: address, detailItems: detailItems };
 
@@ -476,35 +490,19 @@
                     data: JSON.stringify(data),
                     accept: "application/json",
                     success: function (response) {
-                        alert(response.salesOrderId)
+                        
+                        toastr.success("sales order created !")
                     },
                     error: function (xhr, error, status) {
-
-                        if (xhr.responseJSON && xhr.responseJSON.errors) {
-                            const errors = xhr.responseJSON.errors;
-
-                            Object.keys(errors).forEach(field => {
-                                const messages = errors[field];
-                                messages.forEach(msg => {
-                                    DevExpress.ui.notify(
-                                        {
-                                            message: msg,
-                                            width: 300,
-                                            position: {
-                                                my: "top right",
-                                                at: "top right",
-                                                of: window,
-                                                offset: "-20 20"
-                                            }
-                                        },
-                                        "error",
-                                        2000
-                                    );
-                                });
-                            });
-                        } else {
-                            DevExpress.ui.notify("An unknown error occurred.", "error", 2000);
+                        
+                        const errorJson = xhr.responseJSON;
+                        if (errorJson) {
+                            toastr.error(errorJson.detail);
+                            return;
                         }
+
+                        toastr.error("Internal Server Error, Silahkan hubungi admin");
+                        console.log(xhr);
                     }
                 });
             })

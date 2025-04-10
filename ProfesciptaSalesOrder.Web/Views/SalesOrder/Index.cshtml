@@ -1,4 +1,8 @@
-﻿<h3 class="fw-bold">SALES ORDER</h3>
+﻿@{
+    ViewData["Title"] = "Sales Order";
+}
+
+<h3 class="fw-bold">SALES ORDER</h3>
 
 <div class="my-4 mb-lg-5 custom-frame">
     <form class="row mb-lg-5">
@@ -33,11 +37,21 @@
            const dxDateSalesOrderInstance = $('#dx-date-sales-order').dxDateBox({
                 type: 'date',
                 displayFormat: 'dd/MM/yyyy',
-                height: 30
+                height: 30,
+                showClearButton: true,
+                calendarOptions: {
+                    showTodayButton: true,
+                }
+
             }).dxDateBox('instance');
 
             const dxDataGridSalesOrderInstance = $('#dx-datagrid-sales-order').dxDataGrid({
                 dataSource : [],
+                // height: 'auto',
+                scrolling: {
+                    mode: "standard",
+                    showScrollbar: "always"
+                },
                 columns : [
                     {
                         caption: 'No',
@@ -56,23 +70,21 @@
                         cellTemplate: function (container, options) {
                             $('<div>')
                                 .append(
-                                    $(`<a class="text-decoration-none" href="/sales-order/${options.data.salesOrderId}">`)
+                                    $(`<a class="text-decoration-none" href="/SalesOrder/Edit/${options.data.salesOrderId}">`)
                                         .addClass('dx-icon dx-icon-edit')
                                         .attr('title', 'Edit'),
                                     $('<a class="text-decoration-none">')
                                         .addClass('dx-icon dx-icon-trash')
                                         .css('margin-left', '10px')
                                         .attr('title', 'Delete')
-                                        .on('dxclick', function(e) {
+                                        .on('dxclick', async function (e) {
                                             e.preventDefault();
-                                            DevExpress.ui.dialog.confirm("Delete this item?", "Confirm")
-                                                .then(function(result) {
-                                                    if (result) {
-                                                        console.log('Delete', options.data);
-                                                    }
-                                                });
-                                        })
-                                )
+                                            const result = await DevExpress.ui.dialog.confirm("Delete Sales Order?", "Confirm");
+                                            if (result) {
+                                                await fetchDeleteSalesOrder(options.data.salesOrderId);
+                                                await fetchGetSalesOrder(); // <-- hanya dipanggil setelah delete selesai
+                                            }
+                                        })                                )
                                 .appendTo(container);
                         }
                     },
@@ -99,7 +111,7 @@
                     }
                 ],
                 paging: {
-                    pageSize: 10,
+                    pageSize: 5,
                 },
                 pager: {
                     visible: true,
@@ -119,7 +131,6 @@
                 filterRow: { visible: false },
                 searchPanel: { visible: true },
                 hoverStateEnabled: true,
-                height: 'auto',
                 noDataText: "Tidak ada Data",
                 rowAlternationEnabled: true,
                 toolbar: {
@@ -160,28 +171,63 @@
             }).dxDataGrid('instance');
 
             fetchGetSalesOrder();
-            function fetchGetSalesOrder() {
-
-                $.ajax({
-                    url: domain + `/api/sales-orders`,
-                    type: "GET",
-                    contentType: "application/json",
-                    accept: "application/json",
-                    success: function (response) {
-                        dxDataGridSalesOrderInstance.option('dataSource', response)
-                    },
-                    error: function (xhr, error, status) {
-                        const errorJson = xhr.responseJSON;
-                        if (errorJson) {
-                            toastr.error(errorJson.Detail);
-                            return;
+            async function fetchGetSalesOrder() {
+                try {
+                    const response = await fetch(`${domain}/api/sales-orders`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
                         }
+                    });
 
-                        toastr.error("Internal Server Error, Silahkan hubungi admin");
-                        console.log(xhr);
+                    if (!response.ok) {
+                        const errorJson = await response.json().catch(() => null);
+                        if (errorJson?.detail) {
+                            toastr.error(errorJson.detail);
+                        } else {
+                            toastr.error("Internal Server Error, Silahkan hubungi admin");
+                        }
+                        console.error('Fetch failed:', response);
+                        return;
                     }
-                });
+
+                    const data = await response.json();
+                    dxDataGridSalesOrderInstance.option('dataSource', data);
+                } catch (error) {
+                    toastr.error("Gagal menghubungi server. Cek koneksi atau hubungi admin.");
+                    console.error('Fetch error:', error);
+                }
             }
+
+            async function fetchDeleteSalesOrder(salesOrderId) {
+                try {
+                    const response = await fetch(`${domain}/api/sales-orders/${salesOrderId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        const errorJson = await response.json().catch(() => null);
+                        if (errorJson?.detail) {
+                            toastr.error(errorJson.detail);
+                        } else {
+                            toastr.error("Internal Server Error, Silahkan hubungi admin");
+                        }
+                        console.error('Delete failed:', response);
+                        return;
+                    }
+
+                    toastr.success('Sales Order Berhasil Dihapus');
+                } catch (error) {
+                    toastr.error("Gagal menghubungi server. Cek koneksi atau hubungi admin.");
+                    console.error('Fetch error:', error);
+                }
+            }
+
 
 
             $('#button-search').on('click', function(e){

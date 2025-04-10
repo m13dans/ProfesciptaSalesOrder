@@ -5,7 +5,7 @@ namespace ProfesciptaSalesOrder.Web.Controllers.APIControllers;
 
 [ApiController]
 [Route("api/customers")]
-public class CustomersController(GetCustomersService getCustomersService) : ControllerBase
+public class CustomersAPIController(GetCustomersService getCustomersService) : ControllerBase
 {
     [HttpGet("")]
     public async Task<ActionResult<GetCustomerResponse>> GetCustomers()

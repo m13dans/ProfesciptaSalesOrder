@@ -12,6 +12,9 @@ builder.Services.AddSingleton<ConnectionString>();
 builder.Services.AddScoped<GetSalesOrderListService>();
 builder.Services.AddScoped<GetCustomersService>();
 builder.Services.AddScoped<CreateSalesOrderService>();
+builder.Services.AddScoped<GetSalesOrderService>();
+builder.Services.AddScoped<UpdateSalesOrderService>();
+builder.Services.AddScoped<DeleteSalesOrderService>();
 
 var app = builder.Build();
 

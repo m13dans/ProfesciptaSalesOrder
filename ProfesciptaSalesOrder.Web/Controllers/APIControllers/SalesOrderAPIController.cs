@@ -15,7 +15,21 @@ public class SalesOrderAPIController : ControllerBase
         var result = await salesOrderService.GetTopSalesOrder(request);
         if (!result.IsSuccess)
         {
-            Problem(result.Error, statusCode: result.StatusCode);
+            return Problem(result.Error, statusCode: result.StatusCode);
+        }
+
+        return Ok(result.Value);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<GetSalesOrderResponse>> GetSalesOrder(
+        int id,
+        [FromServices] GetSalesOrderService service)
+    {
+        var result = await service.GetSalesOrderAsync(new GetSalesOrderRequest() { SalesOrderId = id});
+        if (!result.IsSuccess)
+        {
+            return Problem(result.Error, statusCode: result.StatusCode);
         }
 
         return Ok(result.Value);
@@ -30,8 +44,33 @@ public class SalesOrderAPIController : ControllerBase
         var result = await service.CreateAsync(request);
         if (!result.IsSuccess)
         {
-            Problem(result.Error, statusCode: result.StatusCode);
+            return Problem(result.Error, statusCode: result.StatusCode);
         }
+
+        return Ok(result.Value);
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<UpdateSalesOrderResponse>> CreateSalesOrder(
+        [FromBody] UpdateSalesOrderRequest request,
+        [FromServices] UpdateSalesOrderService service
+        )
+    {
+        var result = await service.UpdateAsync(request);
+        if (!result.IsSuccess)
+        {
+            return Problem(result.Error, statusCode: result.StatusCode);
+        }
+
+        return Ok(result.Value);
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id, [FromServices] DeleteSalesOrderService service)
+    {
+        var result = await service.DeleteAsync(new DeleteSalesOrderRequest { SalesOrderId = id });
+        if (!result.IsSuccess)
+            return Problem(result.Error, statusCode: result.StatusCode);
 
         return Ok(result.Value);
     }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ProfesciptaSalesOrder.Web.Services.SalesOrder;
 
 namespace ProfesciptaSalesOrder.Web.Controllers;
 
@@ -14,8 +15,8 @@ public class SalesOrderController : Controller
         return View();
     }
 
-    public ActionResult Edit()
+    public ActionResult Edit(int id)
     {
-        return View();
+        return View(id);
     }
 }
