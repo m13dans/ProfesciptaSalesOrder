@@ -3,10 +3,10 @@ using ProfesciptaSalesOrder.Web.Data;
 using ProfesciptaSalesOrder.Web.Models;
 using System.Text.Json.Serialization;
 
-namespace ProfesciptaSalesOrder.Web.Services;
+namespace ProfesciptaSalesOrder.Web.Services.SalesOrder;
 
 
-public class SalesOrderRequest
+public class GetSalesOrderListRequest
 {
     public string? Keywords { get; set; }
 
@@ -14,7 +14,7 @@ public class SalesOrderRequest
     public DateTime? OrderDate { get; set; }
 }
 
-public class SalesOrderResponse
+public class GetSalesOrderListResponse
 {
     public int SalesOrderId { get; set; }
     public string OrderNo { get; set; }
@@ -23,9 +23,9 @@ public class SalesOrderResponse
 }
 
 
-public class SalesOrderService(ConnectionString connectionString)
+public class GetSalesOrderListService(ConnectionString connectionString)
 {
-    public async Task<Result<List<SalesOrderResponse>>> GetTopSalesOrder(SalesOrderRequest request)
+    public async Task<Result<List<GetSalesOrderListResponse>>> GetTopSalesOrder(GetSalesOrderListRequest request)
     {
         var sql = "";
 
@@ -41,14 +41,14 @@ public class SalesOrderService(ConnectionString connectionString)
             {
                 using var conn = connectionString.Create();
 
-                var queryResult = await conn.QueryAsync<SalesOrderResponse>(sql);
+                var queryResult = await conn.QueryAsync<GetSalesOrderListResponse>(sql);
                 var result = queryResult.ToList();
 
-                return Result<List<SalesOrderResponse>>.Success(result);
+                return Result<List<GetSalesOrderListResponse>>.Success(result);
             }
             catch (Exception ex)
             {
-                return Result<List<SalesOrderResponse>>.InternalServerError(ex.Message);
+                return Result<List<GetSalesOrderListResponse>>.InternalServerError(ex.Message);
             }
         }
 
@@ -66,14 +66,14 @@ public class SalesOrderService(ConnectionString connectionString)
             using var conn = connectionString.Create();
 
             request.Keywords ??= "";
-            var queryResult = await conn.QueryAsync<SalesOrderResponse>(sql, new { request.Keywords, request.OrderDate });
+            var queryResult = await conn.QueryAsync<GetSalesOrderListResponse>(sql, new { request.Keywords, request.OrderDate });
             var result = queryResult.ToList();
 
-            return Result<List<SalesOrderResponse>>.Success(result);
+            return Result<List<GetSalesOrderListResponse>>.Success(result);
         }
         catch (Exception ex)
         {
-            return Result<List<SalesOrderResponse>>.InternalServerError(ex.Message);
+            return Result<List<GetSalesOrderListResponse>>.InternalServerError(ex.Message);
         }
     }
 }

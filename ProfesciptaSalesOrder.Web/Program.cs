@@ -1,5 +1,6 @@
 using ProfesciptaSalesOrder.Web.Data;
 using ProfesciptaSalesOrder.Web.Services;
+using ProfesciptaSalesOrder.Web.Services.SalesOrder;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,8 +9,9 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddSingleton<ConnectionString>();
 
-builder.Services.AddScoped<SalesOrderService>();
+builder.Services.AddScoped<GetSalesOrderListService>();
 builder.Services.AddScoped<GetCustomersService>();
+builder.Services.AddScoped<CreateSalesOrderService>();
 
 var app = builder.Build();
 

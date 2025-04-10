@@ -77,6 +77,8 @@
 
             const dxDropDownCustomerInstance = $('#dx-dropdown-customer').dxSelectBox({
                 dataSource: [],
+                displayExpr: 'customerName',
+                valueExpr: 'customerId',
                 height: 30,
                 width: 300,
                 placeholder: ""
@@ -167,7 +169,7 @@
                     },
                     {
                         alignment: 'center',
-                        dataField: 'qty',
+                        dataField: 'quantity',
                         caption: 'Qty',
                         dataType: "number",
                         validationRules: [
@@ -213,7 +215,7 @@
                             precision: 2
                         },
                         calculateCellValue: function(data) {
-                            return (data.qty || 0) * (data.price || 0);
+                            return (data.quantity || 0) * (data.price || 0);
                         },
                         allowEditing: false
                     }
@@ -284,7 +286,7 @@
                     totalItems: [
                         {
                             name: "qtySum",
-                            column: "qty",
+                            column: "quantity",
                             summaryType: "sum",
                             displayFormat: "Total Item: {0}"
                         },
@@ -313,7 +315,7 @@
                     contentType: "application/json",
                     accept: "application/json",
                     success: function (response) {
-                        dxDropDownCustomerInstance.option('dataSource', response)
+                        dxDropDownCustomerInstance.option('dataSource', response?.customers)
                     },
                     error: function (xhr, error, status) {
 
@@ -431,7 +433,7 @@
             $('#button-save').on('click', function(e) {
                 let orderNumber = $('#input-sales-order').val();
                 let orderDate = dxDateSalesOrderInstance.option('value');
-                let customerName = dxDropDownCustomerInstance.option('value');
+                let customerId = dxDropDownCustomerInstance.option('value');
                 let address = $('#input-address').val();
 
                 debugger
@@ -450,7 +452,7 @@
                 } else {
                     $('#dx-date-sales-order').removeClass('is-invalid');
                 }
-                if (!customerName) {
+                if (!customerId) {
                     invalidElement.push('#customer-invalid-feedback')
                     $('#dx-dropdown-customer').addClass('is-invalid');
                 } else {
@@ -461,16 +463,20 @@
                     return;
                 }
 
-                let data = { customerName: customerName, salesOrderNo : orderNumber, salesOrderDate: orderDate, address: address };
+                let detailItems = dxDataGridSalesOrderInstance.option('dataSource');
+
+                console.log(detailItems);
+
+                let data = { customerId: customerId, salesOrderNo : orderNumber, salesOrderDate: orderDate, address: address, detailItems: detailItems };
 
                 $.ajax({
-                    url: domain + `/api/sales-orders?Keywords=${keywordsValue}${queryStringDate}`,
+                    url: domain + `/api/sales-orders`,
                     method: "POST",
                     contentType: "application/json",
                     data: JSON.stringify(data),
                     accept: "application/json",
                     success: function (response) {
-                        dxDataGridSalesOrderInstance.option('dataSource', response)
+                        alert(response.salesOrderId)
                     },
                     error: function (xhr, error, status) {
 

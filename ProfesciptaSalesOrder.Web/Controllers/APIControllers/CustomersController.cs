@@ -8,7 +8,7 @@ namespace ProfesciptaSalesOrder.Web.Controllers.APIControllers;
 public class CustomersController(GetCustomersService getCustomersService) : ControllerBase
 {
     [HttpGet("")]
-    public async Task<ActionResult<List<string>>> GetCustomers()
+    public async Task<ActionResult<GetCustomerResponse>> GetCustomers()
     {
         var result = await getCustomersService.GetCustomersAsync();
         if (!result.IsSuccess)
@@ -16,7 +16,7 @@ public class CustomersController(GetCustomersService getCustomersService) : Cont
             return Problem(result.Error, statusCode: result.StatusCode);
         }
 
-        return Ok(result.Value.Customers);
+        return Ok(result.Value);
     }
 
 
