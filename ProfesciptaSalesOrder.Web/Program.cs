@@ -9,6 +9,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<ConnectionString>();
 
 builder.Services.AddScoped<SalesOrderService>();
+builder.Services.AddScoped<GetCustomersService>();
 
 var app = builder.Build();
 

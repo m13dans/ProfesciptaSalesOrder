@@ -1,28 +1,46 @@
-﻿<h3 class="fw-bold">SALES ORDER - CREATE</h3>
+﻿<h3 class="fw-bold my-0">SALES ORDER - CREATE</h3>
 
 <div class="p-2 border-bottom">
-    <h4 class="text-center my-auto" >Sales Order Information</h4>
+    <h4 class="text-center my-auto">Sales Order Information</h4>
 </div>
 
 <div class="mb-lg-5 px-4 pt-3">
     <div class="row mb-lg-5">
         <div class="col-lg-6">
-            <div class="d-lg-flex align-items-center mb-3">
-                <label class="label-custom" for="input-sales-order">Sales Order Number</label>
-                <input type="text" class="custom-input" id="input-sales-order" />
+            <div class="mb-3">
+                <div class="d-lg-flex">
+                    <label class="label-custom pt-lg-1" for="input-sales-order">Sales Order Number</label>
+                    <div>
+                        <input type="text" class="custom-input sales-order-group" id="input-sales-order" />
+                        <div class="invalid-feedback" id="sales-order-invalid-feedback">
+                            Sales Order Number Not Valid
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="d-lg-flex align-items-center mb-3">
-                <label class="label-custom" for="dx-date-sales-order">Order Date</label>
-                <div id="dx-date-sales-order"></div>
+            <div class="d-lg-flex mb-3">
+                <label class="label-custom pt-1" for="dx-date-sales-order">Order Date</label>
+                <div>
+                    <div id="dx-date-sales-order"></div>
+                    <div class="invalid-feedback" id="order-date-invalid-feedback">
+                        Date Is Not Valid
+                    </div>
+                </div>
             </div>
 
         </div>
 
         <div class="col-lg-6">
-            <div class="d-lg-flex align-items-center mb-3">
-                <label class="label-custom" for="input-customer">Customer</label>
-                <input type="text" class="custom-input" id="input-customer" />
+            <div class="d-lg-flex mb-3">
+                <label class="label-custom pt-1" for="input-customer">Customer</label>
+                <div>
+                    <div id="dx-dropdown-customer"></div>
+                    <div class="invalid-feedback" id="customer-invalid-feedback">
+                        Customer Is Not Valid
+                    </div>
+                </div>
+
             </div>
 
             <div class="d-lg-flex">
@@ -39,6 +57,11 @@
 
 <div id="dx-datagrid-detail-item"></div>
 
+<div class="d-flex justify-content-center gap-4">
+    <button type="button" id="button-save" class="btn btn-primary px-5">Save</button>
+    <button type="button" id="button-cancel" class="btn btn-secondary px-5">Close</button>
+</div>
+
 @section Scripts {
     <script>
         const domain = window.location.origin;
@@ -52,15 +75,19 @@
                 height: 30
             }).dxDateBox('instance');
 
+            const dxDropDownCustomerInstance = $('#dx-dropdown-customer').dxSelectBox({
+                dataSource: [],
+                height: 30,
+                width: 300,
+                placeholder: ""
+            }).dxSelectBox('instance');
+
             const dxDataGridSalesOrderInstance = $('#dx-datagrid-detail-item').dxDataGrid({
                 dataSource : [],
-                // editing: {
-                //     allowUpdating: true,
-                //     allowDeleting: true,
-                //     allowAdding: true,
-                //     mode: 'row'
-                // },
-
+                editing: {
+                    mode: 'row',
+                    newRowPosition: 'last'
+                },
                 columns : [
                     {
                         caption: 'No',
@@ -83,14 +110,14 @@
                             if (options.row && options.row.isEditing) {
                                 // Save and Cancel buttons for edit mode
                                 $container.append(
-                                    $('<a href="#" class="text-decoration-none">')
+                                    $('<a class="text-decoration-none">')
                                         .addClass('dx-icon dx-icon-save')
                                         .attr('title', 'Save')
                                         .on('click', function(e) {
                                             e.preventDefault();
                                             grid.saveEditData();
                                         }),
-                                    $('<a href="#" class="text-decoration-none">')
+                                    $('<a class="text-decoration-none">')
                                         .addClass('dx-icon dx-icon-revert')
                                         .css('margin-left', '10px')
                                         .attr('title', 'Cancel')
@@ -102,14 +129,14 @@
                             } else {
                                 // Edit and Delete buttons for view mode
                                 $container.append(
-                                    $('<a href="#" class="text-decoration-none">')
+                                    $('<a class="text-decoration-none">')
                                         .addClass('dx-icon dx-icon-edit')
                                         .attr('title', 'Edit')
                                         .on('click', function(e) {
                                             e.preventDefault();
                                             grid.editRow(options.rowIndex);
                                         }),
-                                    $('<a href="#" class="text-decoration-none">')
+                                    $('<a class="text-decoration-none">')
                                         .addClass('dx-icon dx-icon-trash')
                                         .css('margin-left', '10px')
                                         .attr('title', 'Delete')
@@ -121,35 +148,78 @@
                             }
 
                             $container.appendTo(container);
-                        } 
+                        }
                     },
                     {
                         dataField: 'salesOrderId',
                         visible: false
                     },
                     {
-                        dataField: 'orderNo',
+                        dataField: 'itemName',
                         alignment: 'center',
                         caption: 'Item Name',
+                        validationRules: [
+                            { 
+                                type: "required", 
+                                message: "Item Name is required" 
+                            },
+                        ]
                     },
                     {
                         alignment: 'center',
                         dataField: 'qty',
-                        caption: 'Qty'
+                        caption: 'Qty',
+                        dataType: "number",
+                        validationRules: [
+                            { 
+                                type: "required", 
+                                message: "Quantity is required" 
+                            },
+                            { 
+                                type: "range", 
+                                min: 0.0001, 
+                                message: "Quantity must be > 0" 
+                            }
+                        ]
                     },
                     {
                         alignment: 'center',
                         dataField: 'price',
-                        caption: 'Price'
+                        caption: 'Price',
+                        dataType: "number",
+                        format: {
+                            type: "fixedPoint",
+                            precision: 2
+                        },
+                        validationRules: [
+                            { 
+                                type: "required", 
+                                message: "Price is required" 
+                            },
+                            { 
+                                type: "range", 
+                                min: 0.0001, 
+                                message: "Price must be > 0" 
+                            }
+                        ]
                     },
                     {
                         alignment: 'center',
                         dataField: 'total',
-                        caption: 'Total'
+                        caption: 'Total',
+                        dataType: "number",
+                        format: {
+                            type: "fixedPoint",
+                            precision: 2
+                        },
+                        calculateCellValue: function(data) {
+                            return (data.qty || 0) * (data.price || 0);
+                        },
+                        allowEditing: false
                     }
                 ],
                 paging: {
-                    pageSize: 10,
+                    enabled: true
                 },
                 pager: {
                     visible: true,
@@ -176,18 +246,106 @@
                     items: [
                         {
                             template: function() {
-                                return $('<button>')
+                                return $('<button id="button-add-item">')
                                     .addClass('btn btn-primary me-2')
                                     .html('<i class="dx-icon dx-icon-product"></i> Add Item')
                                     .on('click', function(e) {
+                                        setTimeout(() => {
+                                            debugger
+                                            $('#dx-datagrid-detail-item').find('tbody tr.dx-row-inserted').first().children('td').eq(2).find('input.dx-texteditor-input').first().focus();
+                                        }, 100)
+
                                         dxDataGridSalesOrderInstance.addRow();
+
+                                        debugger
                                     })
                             },
                             location: 'before'
                         },
                     ]
                 },
+                onSaved: function(e) {
+                    debugger
+                    var element = $(e.element).find('tbody tr.dx-row-inserted').first().children('td').eq(2).find('input.dx-texteditor-input').first();
+                    setTimeout(() => {
+                        element.focus();
+                    }, 100);
+                },
+                onRowInserted(e) {
+                    debugger
+
+                    e.component.addRow();
+                    // setTimeout(() => {
+                    //     dxDataGridSalesOrderInstance.editCell(0, "itemName");
+                    // }, 100);
+                },
+                summary: {
+                    recalculateWhileEditing: true,
+                    totalItems: [
+                        {
+                            name: "qtySum",
+                            column: "qty",
+                            summaryType: "sum",
+                            displayFormat: "Total Item: {0}"
+                        },
+                        {
+                            name: "totalSum",
+                            column: "total",
+                            summaryType: "sum",
+                            displayFormat: "Total Amount: {0}",
+                            valueFormat: {
+                                type: "currency",
+                                currency: "IDR",
+                                precision: 2
+                            }
+                        }
+                    ]
+                }
+
             }).dxDataGrid('instance');
+
+            fetchGetCustomer();
+            function fetchGetCustomer() {
+
+                $.ajax({
+                    url: domain + `/api/customers`,
+                    type: "GET",
+                    contentType: "application/json",
+                    accept: "application/json",
+                    success: function (response) {
+                        dxDropDownCustomerInstance.option('dataSource', response)
+                    },
+                    error: function (xhr, error, status) {
+
+                        if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            const errors = xhr.responseJSON.errors;
+
+                            Object.keys(errors).forEach(field => {
+                                const messages = errors[field];
+                                messages.forEach(msg => {
+                                    DevExpress.ui.notify(
+                                        {
+                                            message: msg,
+                                            width: 300,
+                                            position: {
+                                                my: "top right",
+                                                at: "top right",
+                                                of: window,
+                                                offset: "-20 20"
+                                            }
+                                        },
+                                        "error",
+                                        2000
+                                    );
+                                });
+                            });
+                        } else {
+                            DevExpress.ui.notify("An unknown error occurred.", "error", 2000);
+                            console.log(xhr);
+                        }
+                    }
+                });
+            }
 
             // fetchGetSalesOrder();
             function fetchGetSalesOrder() {
@@ -240,6 +398,7 @@
                         dxDataGridSalesOrderInstance.option('dataSource', response)
                     },
                     error: function (xhr, error, status) {
+
                         if (xhr.responseJSON && xhr.responseJSON.errors) {
                             const errors = xhr.responseJSON.errors;
 
@@ -253,8 +412,8 @@
                                             position: {
                                                 my: "top right",
                                                 at: "top right",
-                                                of: window, // Or body, window, etc.
-                                                offset: "-20 20" // X: move 20px left (negative), Y: move 20px down
+                                                of: window,
+                                                offset: "-20 20"
                                             }
                                         },
                                         "error",
@@ -268,7 +427,81 @@
                     }
                 });
             })
-        });
 
+            $('#button-save').on('click', function(e) {
+                let orderNumber = $('#input-sales-order').val();
+                let orderDate = dxDateSalesOrderInstance.option('value');
+                let customerName = dxDropDownCustomerInstance.option('value');
+                let address = $('#input-address').val();
+
+                debugger
+
+                let invalidElement = [];
+
+                if (!orderNumber) {
+                    invalidElement.push('#sales-order-invalid-feedback')
+                    $('#input-sales-order').addClass('is-invalid');
+                } else {
+                    $('#input-sales-order').removeClass('is-invalid');
+                }
+                if (!orderDate) {
+                    invalidElement.push('#order-date-invalid-feedback')
+                    $('#dx-date-sales-order').addClass('is-invalid');
+                } else {
+                    $('#dx-date-sales-order').removeClass('is-invalid');
+                }
+                if (!customerName) {
+                    invalidElement.push('#customer-invalid-feedback')
+                    $('#dx-dropdown-customer').addClass('is-invalid');
+                } else {
+                    $('#dx-dropdown-customer').removeClass('is-invalid');
+                }
+
+                if (invalidElement.length > 0) {
+                    return;
+                }
+
+                let data = { customerName: customerName, salesOrderNo : orderNumber, salesOrderDate: orderDate, address: address };
+
+                $.ajax({
+                    url: domain + `/api/sales-orders?Keywords=${keywordsValue}${queryStringDate}`,
+                    method: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(data),
+                    accept: "application/json",
+                    success: function (response) {
+                        dxDataGridSalesOrderInstance.option('dataSource', response)
+                    },
+                    error: function (xhr, error, status) {
+
+                        if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            const errors = xhr.responseJSON.errors;
+
+                            Object.keys(errors).forEach(field => {
+                                const messages = errors[field];
+                                messages.forEach(msg => {
+                                    DevExpress.ui.notify(
+                                        {
+                                            message: msg,
+                                            width: 300,
+                                            position: {
+                                                my: "top right",
+                                                at: "top right",
+                                                of: window,
+                                                offset: "-20 20"
+                                            }
+                                        },
+                                        "error",
+                                        2000
+                                    );
+                                });
+                            });
+                        } else {
+                            DevExpress.ui.notify("An unknown error occurred.", "error", 2000);
+                        }
+                    }
+                });
+            })
+        })
     </script>
 }

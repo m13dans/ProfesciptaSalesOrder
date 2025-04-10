@@ -125,3 +125,6 @@ textarea:focus {
     width: 300px;
 }
 
+.dx-icon:hover {
+    cursor: pointer;
+}
